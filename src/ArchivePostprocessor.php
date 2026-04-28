@@ -35,6 +35,7 @@ class ArchivePostprocessor
     public function setIgnoredFiles(array $ignoredFiles): self
     {
         $this->ignoredFiles = $ignoredFiles;
+        return $this;
     }
 
     public function postprocessDirectory(string $dir): bool
