@@ -15,6 +15,7 @@ class ArchivePostprocessor
 
     private array $handlers = [];
     private bool $flattenArchives = false;
+    private array $ignoredFiles = [];
         
     public function __construct(private array $flags)
     {
@@ -29,6 +30,11 @@ class ArchivePostprocessor
         }
 
         $this->flattenArchives = ($flags['flatten'] ?? false) ? true : false;
+    }
+
+    public function setIgnoredFiles(array $ignoredFiles): self
+    {
+        $this->ignoredFiles = $ignoredFiles;
     }
 
     public function postprocessDirectory(string $dir): bool
@@ -64,7 +70,7 @@ class ArchivePostprocessor
     private function doFlattenRoot(string $dir): bool
     {
         $flattener = new Flattener();
-        return $flattener->flattenDir($dir, false);
+        return $flattener->flattenDir($dir, false, $this->ignoredFiles);
     }
 
     private function doFlatten(string $dir): bool
@@ -73,7 +79,7 @@ class ArchivePostprocessor
         foreach (DirectoryLister::listDirectory($dir) as $subdir) {
             $path = $dir . "/" . $subdir;
             if (is_dir($path)) {
-                if (!$flattener->flattenDir($path, true)) {
+                if (!$flattener->flattenDir($path, true, $this->ignoredFiles)) {
                     return false;
                 }
             }
