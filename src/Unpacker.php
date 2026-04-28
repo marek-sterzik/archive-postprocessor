@@ -3,6 +3,7 @@
 namespace Sterzik\ArchivePostprocessor;
 
 use ReflectionClass;
+use Exception;
 
 class Unpacker
 {
@@ -10,6 +11,13 @@ class Unpacker
     
     public function unpack(string $dir): bool
     {
+        $realDir = realpath($dir);
+
+        if ($realDir === false) {
+            fprintf(STDERR, "Error: directory does not exist: %s\n", $dir);
+        }
+        $dir = $realDir;
+
         $unpackers = $this->createUnpackers();
 
         foreach(DirectoryLister::listDirectory($dir) as $file) {
@@ -18,19 +26,27 @@ class Unpacker
                 continue;
             }
             $fileLc = strtolower($file);
-            foreach ($unpackers as $extension => $unpacker) {
-                if (strlen($fileLc) >= strlen($extension) && substr($fileLc, -strlen($extension)) === $extension) {
-                    if ($unpacker->checkFile($path)) {
-                        $unpackedDirBase = substr($file, 0, strlen($file) - strlen($extension));
-                        $unpackedDir = $this->createUnpackedDir($unpackedDirBase, $dir);
-                        if ($unpackedDir === null) {
-                            fprintf(STDERR, "Error: cannot find directory to unpack archive: %s\n", $file);
-                            return false;
+            foreach ($unpackers as $extension => $extensionUnpackers) {
+                foreach ($extensionUnpackers as $unpacker) {
+                    if (strlen($fileLc) >= strlen($extension) && substr($fileLc, -strlen($extension)) === $extension) {
+                        if ($unpacker->doCheckFile($path, $extension)) {
+                            $unpackedDirBase = substr($file, 0, strlen($file) - strlen($extension));
+                            $unpackedDir = $this->createUnpackedDir($unpackedDirBase, $dir);
+                            if ($unpackedDir === null) {
+                                fprintf(STDERR, "Error: cannot find directory to unpack archive: %s\n", $file);
+                                return false;
+                            }
+                            if ($unpacker->doUnpack($path, $unpackedDir, $extension)) {
+                                fprintf(STDERR, "Message: archive %s unpacked successfully\n", $file);
+                                @unlink($path);
+                            } else {
+                                fprintf(STDERR, "Warning: archive %s cannot be unpacked properly\n", $file);
+                                if (DirectoryLister::isEmpty($unpackedDir)) {
+                                    @rmdir($unpackedDir);
+                                }
+                            }
+                            break 2;
                         }
-                        if ($unpacker->unpack($path, $unpackedDir)) {
-                            @unlink($path);
-                        }
-                        break;
                     }
                 }
             }
@@ -62,7 +78,10 @@ class Unpacker
             $unpacker = new $unpackerClass();
             foreach ($unpacker->getExtensions() as $extension) {
                 $extension = strtolower($extension);
-                $unpackers[$extension] = $unpacker;
+                if (!isset($unpackers[$extension])) {
+                    $unpackers[$extension] = [];
+                }
+                $unpackers[$extension][] = $unpacker;
             }
         }
 
