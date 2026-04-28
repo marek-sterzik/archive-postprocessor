@@ -22,10 +22,16 @@ class DirectoryLister
         closedir($dd);
     }
 
-    public static function getSingleSubDirectory(string $dir): ?string
+    public static function getSingleSubDirectory(string $dir, array &$ignoredFiles): ?string
     {
+        $ignoredFilesFound = [];
+        $ignoredFiles = array_fill_keys($ignoredFiles, true);
         $dirFound = null;
         foreach (self::listDirectory($dir) as $file) {
+            if (isset($ignoredFiles[$file])) {
+                $ignoredFilesFound[$file] = true;
+                continue;
+            }
             if ($dirFound !== null) {
                 return null;
             }
@@ -34,6 +40,7 @@ class DirectoryLister
             }
             $dirFound = $file;
         }
+        $ignredFiles = array_keys($ignoredFilesFound);
         return $dirFound;
     }
 

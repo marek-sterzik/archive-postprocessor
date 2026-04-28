@@ -63,13 +63,21 @@ class ArchivePostprocessor
 
     private function doFlattenRoot(string $dir): bool
     {
-        echo "flattenRoot: $dir\n";
-        return true;
+        $flattener = new Flattener();
+        return $flattener->flattenDir($dir, false);
     }
 
     private function doFlatten(string $dir): bool
     {
-        echo "flatten: $dir\n";
+        $flattener = new Flattener();
+        foreach (DirectoryLister::listDirectory($dir) as $subdir) {
+            $path = $dir . "/" . $subdir;
+            if (is_dir($path)) {
+                if (!$flattener->flattenDir($path, true)) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 }

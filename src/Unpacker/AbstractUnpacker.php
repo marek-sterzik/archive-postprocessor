@@ -82,6 +82,7 @@ abstract class AbstractUnpacker
         if (system($command, $result) === false) {
             return false;
         }
+        var_dump($result);
         if ($result !== 0) {
             return false;
         }
@@ -103,5 +104,20 @@ abstract class AbstractUnpacker
     protected function command(string $template, string ...$args): bool
     {
         return $this->commandEx($template, $args);
+    }
+
+    protected function withCwd(string $dir, callable $function): mixed
+    {
+        $cwd = getcwd();
+        if (!chdir($dir)) {
+            throw new Exception("Cannot change directory");
+        }
+        try {
+            return $function();
+        } finally {
+            if (!chdir($cwd)) {
+                throw new Exception("Cannot change directory");
+            }
+        }
     }
 }

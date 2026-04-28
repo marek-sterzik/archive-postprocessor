@@ -19,7 +19,7 @@ class ZipUnpacker extends AbstractUnpacker
     public function unpack(string $filename, string $directory): bool
     {
         $this->unpackCommand("unzip -d %s -- %s", $directory, $filename);
-        $this->unpackCommand("jar xf %s -C %s", $filename, $directory);
+        $this->withCwd($directory, fn() => $this->unpackCommand("jar xf %s", $filename));
         return false;
     }
 }
