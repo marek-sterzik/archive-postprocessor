@@ -40,6 +40,16 @@ class ArchivePostprocessor
 
     public function postprocessDirectory(string $dir): bool
     {
+        $realDir = realpath($dir);
+
+        if ($realDir === false) {
+            fprintf(STDERR, "Error: directory does not exist: %s\n", $dir);
+        }
+
+        $dir = $realDir;
+        
+        fprintf(STDERR, "Info: processing dir: %s\n", $dir);
+
         try {
             foreach ($this->handlers as $handler) {
                 if (!$this->$handler($dir)) {

@@ -11,13 +11,6 @@ class Unpacker
     
     public function unpack(string $dir): bool
     {
-        $realDir = realpath($dir);
-
-        if ($realDir === false) {
-            fprintf(STDERR, "Error: directory does not exist: %s\n", $dir);
-        }
-        $dir = $realDir;
-
         $unpackers = $this->createUnpackers();
 
         foreach(DirectoryLister::listDirectory($dir) as $file) {
@@ -57,7 +50,11 @@ class Unpacker
     private function listUnpackerClasses(): array
     {
         $classes = [];
-        foreach (glob(__DIR__ . "/Unpacker/*.php") as $file) {
+        foreach (DirectoryLister::listDirectory(__DIR__ . "/Unpacker/") as $file) {
+            if (!preg_match('/\\.php$/', $file)) {
+                continue;
+            }
+            
             $class = "Sterzik\\ArchivePostprocessor\\Unpacker\\" . basename($file, ".php");
             if (class_exists($class) && is_a($class, Unpacker\AbstractUnpacker::class, true)) {
                 $rc = new ReflectionClass($class);
