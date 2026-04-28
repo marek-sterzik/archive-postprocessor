@@ -1,0 +1,10 @@
+{
+    "require": {
+        "spsostrov/getopt": "^0.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sterzik\\ArchivePostprocessor\\": "src/"
+        }
+    }
+}

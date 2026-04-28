@@ -1,0 +1,76 @@
+<?php
+
+$workdir = dirname(__DIR__);
+
+if (count($argv) !== 2) {
+    fprintf(STDERR, "Usage: %s <binary>\n", $argv[0]);
+    exit(1);
+}
+
+$binary = $argv[1];
+
+if (preg_match('|/|', $binary) || $binary == "" || !file_exists($workdir . "/bin/" . $binary)) {
+    fprintf(STDERR, "Invalid binary: %s\n", $binary);
+    exit(1);
+}
+
+function files(string $workdir, string $binary): Generator
+{
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($workdir));
+    $prefix = rtrim($workdir, "/") . "/";
+    $prefixLength = strlen($prefix);
+    $vendorLogged = false;
+    foreach ($iterator as $file) {
+        if (substr(basename($file), 0, 1) == ".") {
+            continue;
+        }
+        if (substr($file, 0, $prefixLength) !== $prefix) {
+            continue;
+        }
+        $relativePath = substr($file, $prefixLength);
+
+        $parsed = explode("/", $relativePath);
+
+        if (in_array($parsed[0], [".git", "build", "lib", "composer.json", "composer.lock"])) {
+            continue;
+        }
+
+        if ($parsed[0] === "bin") {
+            array_shift($parsed);
+            if (implode("/", $parsed) !== $binary) {
+                continue;
+            }
+        }
+
+        if ($parsed[0] !== 'vendor') {
+            fprintf(STDERR, "  added to archive: %s\n", $relativePath);
+        } elseif (!$vendorLogged) {
+            $vendorLogged = true;
+            fprintf(STDERR, "  added to archive: %s\n", "vendor/*");
+        }
+        yield $file;
+    }
+}
+
+try {
+    // Create a new Phar object
+    $phar = new Phar($workdir . '/build/'. $binary . '.phar', 0);
+
+    fprintf(STDERR, "creating archive for binary: %s\n", $binary);
+
+    // Add files to the archive
+    $phar->buildFromIterator(files($workdir, $binary), $workdir);
+
+    // Set the default stub file
+    $defaultStub = $phar->createDefaultStub('bin/' . $binary);
+    $stub = "#!/usr/bin/env php\n" . $defaultStub;
+    $phar->setStub($stub);
+
+    // Save the archive
+    $phar->stopBuffering();
+} catch (Exception $e) {
+    fprintf(STDERR, "Error: %s\n", $e->getMessage());
+    exit (1);
+}
+
+exit(0);

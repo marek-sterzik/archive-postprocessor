@@ -1,0 +1,66 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "4b9b8d1a49b740c4c1565a949ac76888",
+    "packages": [
+        {
+            "name": "spsostrov/getopt",
+            "version": "v0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/marek-sterzik/getopt.git",
+                "reference": "7b4e140cd40a2d95d6e55abcba02c558d401ceb5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/marek-sterzik/getopt/zipball/7b4e140cd40a2d95d6e55abcba02c558d401ceb5",
+                "reference": "7b4e140cd40a2d95d6e55abcba02c558d401ceb5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "php": ">=8.1",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^10.4",
+                "squizlabs/php_codesniffer": "^3.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SPSOstrov\\GetOpt\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Marek Sterzik",
+                    "email": "sterzik@spsostrov.cz"
+                }
+            ],
+            "description": "The SPŠ Ostrov GetOpt library",
+            "homepage": "https://github.com/marek-sterzik/getopt",
+            "support": {
+                "issues": "https://github.com/marek-sterzik/getopt/issues",
+                "source": "https://github.com/marek-sterzik/getopt/tree/v0.4.0"
+            },
+            "time": "2026-04-23T23:18:51+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.6.0"
+}

@@ -1,0 +1,51 @@
+#!/usr/bin/env php
+<?php
+
+require_once dirname(__DIR__) . "/vendor/autoload.php";
+
+use SPSOstrov\GetOpt\Options;
+use SPSOstrov\GetOpt\ArgsException;
+use Sterzik\ArchivePostprocessor\ArchivePostprocessor;
+
+$options = new Options([
+    'u|unpack                      unpack all archives in the given directory',
+    'f|flatten                     flatten all subdirectories in the archive',
+    'F|flatten-root                flatten the root of the given directory',
+    'h|help                        print help',
+    '$directory*                   apply to these directories',
+]);
+
+$argv0 = array_shift($argv);
+$options->setArgv0($argv0);
+
+try {
+    $parsed = $options->parseArgs($argv);
+} catch (Exception $e) {
+    fprintf(STDERR, "Error: %s\n", $e->getMessage());
+    fprintf(STDERR, "use: \"%s --help\" for help\n", $argv0);
+    exit(1);
+}
+
+if ($parsed['help'] ?? false) {
+    fprintf(STDERR, $options->getHelpFormatted());
+    exit(0);
+}
+
+$flagIds = ['unpack', 'flatten', 'flatten-root'];
+$flags = [];
+foreach ($flagIds as $flag) {
+    if ($parsed[$flag] ?? false) {
+        $flags[] = $flag;
+    }
+}
+
+$archivePostprocessor = new ArchivePostprocessor($flags);
+
+foreach ($parsed['directory'] ?? [] as $dir) {
+    $ret = $archivePostprocessor->postprocessDirectory($dir);
+    if (!$ret) {
+        exit(2);
+    }
+}
+
+exit(0);

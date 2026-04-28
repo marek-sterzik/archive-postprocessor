@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+build_dir="build"
+binaries=(archive-postprocessor)
+
+cd "`dirname "$0"`/.."
+
+if [ ! -d "$build_dir" ]; then
+    mkdir "$build_dir"
+fi
+
+composer install --no-dev --no-interaction
+
+cd "$build_dir"
+
+for binary in "${binaries[@]}"; do
+    tmp_binary="$binary.phar"
+    rm -f "$binary" "$tmp_binary"
+    php -d phar.readonly=0 ../lib/create-archive "$binary"
+    mv "$tmp_binary" "$binary"
+    chmod +x "$binary"
+done
