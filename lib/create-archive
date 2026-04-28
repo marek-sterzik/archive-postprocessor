@@ -31,7 +31,7 @@ function files(string $workdir, string $binary): Generator
 
         $parsed = explode("/", $relativePath);
 
-        if (in_array($parsed[0], [".git", "build", "lib", "composer.json", "composer.lock"])) {
+        if (in_array($parsed[0], [".git", "build", "lib", "tests", "composer.json", "composer.lock"])) {
             continue;
         }
 
